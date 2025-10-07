@@ -2,6 +2,8 @@
 
 Complete installation and configuration instructions for running Ratatouille locally.
 
+**🔗 Live Demo**: [https://tinyurl.com/ratatouillechef](https://tinyurl.com/ratatouillechef)
+
 ## Prerequisites
 
 - **Python 3.10 or higher** ([Download](https://www.python.org/downloads/))

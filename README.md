@@ -2,6 +2,8 @@
 
 An intelligent recipe recommendation system that helps home cooks learn culinary techniques through personalized recipe suggestions and interactive cooking guidance.
 
+**🔗 Try it live**: [https://tinyurl.com/ratatouillechef](https://tinyurl.com/ratatouillechef)
+
 ## Overview
 
 Ratatouille is a **4-agent multi-agent system** built with LangGraph that delivers educational recipe recommendations optimized for learning. The system features conversational recipe discovery, interactive cooking mode with timers, and a personal cookbook for saved recipes.
