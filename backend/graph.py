@@ -31,8 +31,8 @@ def route_after_recipe_hunter(state: RecipeState) -> str:
     recipe_count = len(state.get('raw_recipes', []))
     retry_count = state.get('retry_count', 0)
 
-    # If we found fewer than 3 recipes and haven't retried too many times
-    if recipe_count < 3 and retry_count < 2:
+    # If we found fewer than 2 recipes and haven't retried too many times
+    if recipe_count < 2 and retry_count < 2:
         print(f"⚠️ Only {recipe_count} recipes found. Retrying with broader search...")
 
         # Signal to Research Planner to broaden search
