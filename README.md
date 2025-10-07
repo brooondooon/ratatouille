@@ -1,143 +1,234 @@
 # 🐀 Ratatouille - AI Culinary Coach
 
-An intelligent recipe recommendation system that helps home cooks learn culinary techniques through personalized, validated recipe suggestions.
+An intelligent recipe recommendation system that helps home cooks learn culinary techniques through personalized recipe suggestions and interactive cooking guidance.
 
 ## Overview
 
-Ratatouille uses a **5-agent multi-agent system** with semantic understanding to recommend recipes that genuinely teach cooking techniques. Unlike traditional recipe search that relies on keywords, Ratatouille validates that recipes actually teach the requested technique (e.g., filters out "fried rice" when searching for "pan sauces").
+Ratatouille is a **4-agent multi-agent system** built with LangGraph that delivers educational recipe recommendations optimized for learning. The system features conversational recipe discovery, interactive cooking mode with timers, and a personal cookbook for saved recipes.
 
 ### Key Features
 
-- ✅ **Semantic Technique Validation** - LLM-powered filtering eliminates false positives
-- ✅ **Educational Focus** - Recipes scored on learning value, not just relevance
-- ✅ **Adaptive Coordination** - Agents retry with broader search when needed
-- ✅ **Nutrition Intelligence** - Automatic nutrition estimation per serving
-- ✅ **Source Transparency** - Citations with dates and author attribution
+- 🎯 **Smart Recipe Discovery** - Conversational interface for natural language requests
+- 🧑‍🍳 **Interactive Cooking Mode** - Step-by-step guidance with timers and XP rewards
+- 📚 **Personal Cookbook** - Bookmark and organize favorite recipes
+- 🤖 **4-Agent Coordination** - Specialized agents for planning, hunting, personalizing, and nutrition
+- ⚡ **Optimized Performance** - 30-second response times (60-70% faster than v1.0)
+- 🍎 **Nutrition Intelligence** - Automatic nutrition estimation per serving
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.10+
-- OpenAI API key ([get one here](https://platform.openai.com/api-keys))
-- Tavily API key ([get one here](https://tavily.com))
+- **Python 3.10+** ([Download](https://www.python.org/downloads/))
+- **Node.js 18+** ([Download](https://nodejs.org/))
+- **OpenAI API key** ([Get one here](https://platform.openai.com/api-keys))
+- **Tavily API key** ([Get one here](https://tavily.com))
 
-### Installation
+### Quick Installation
 
 ```bash
-# Clone repository
-git clone <repo-url>
+# 1. Clone repository
+git clone https://github.com/brooondooon/ratatouille.git
 cd ratatouille-project
 
-# Install dependencies
+# 2. Backend setup
 pip install -r requirements.txt
-
-# Configure API keys
 cp .env.example .env
 # Edit .env with your API keys
+
+# 3. Frontend setup
+cd frontend
+npm install
+cd ..
+
+# 4. Start backend (terminal 1)
+export PYTHONPATH=$(pwd)
+python3 backend/app.py
+
+# 5. Start frontend (terminal 2)
+cd frontend && npm run dev
 ```
 
-### Running the Backend
+**Access the app**: http://localhost:3000
 
-```bash
-python3 -m backend.app
-```
-
-Backend runs on `http://localhost:8000`
-
-### Testing the API
-
-Visit `http://localhost:8000/docs` for interactive API documentation.
-
-**Example request:**
-```bash
-curl -X POST http://localhost:8000/api/recommend \
-  -H "Content-Type: application/json" \
-  -d '{
-    "learning_goal": "pan sauces",
-    "skill_level": "intermediate",
-    "dietary_restrictions": []
-  }'
-```
+**Detailed setup instructions**: See [docs/SETUP.md](docs/SETUP.md)
 
 ## Architecture
 
-### 5-Agent System
+### 4-Agent System
 
-1. **Research Planner** - Generates optimal search queries from learning goals
-2. **Recipe Hunter** - Searches Tavily API and parses recipes with LLM
-3. **Technique Validator** - Validates recipes genuinely teach the technique
-4. **Personalization Engine** - Scores and selects top 3 recipes
-5. **Nutrition Analyzer** - Estimates nutritional information
+1. **Research Planner** - Generates optimal search queries based on learning goals
+2. **Recipe Hunter** - Searches Tavily API and parses recipes into structured format
+3. **Personalization Engine** - Scores, filters, and selects top 3 recipes with reasoning
+4. **Nutrition Analyzer** - Estimates nutritional information using GPT
+
+**Agent Coordination**: Conditional routing with automatic retry logic when insufficient results are found.
 
 ### Technology Stack
 
-- **Orchestration:** LangGraph (multi-agent state management)
-- **LLM:** OpenAI GPT-3.5-turbo
-- **Search:** Tavily API
-- **Backend:** FastAPI
-- **Language:** Python 3.10+
+**Backend**:
+- **Orchestration**: LangGraph 0.6.8 (multi-agent state management)
+- **LLM**: OpenAI GPT-3.5-turbo
+- **Search**: Tavily API
+- **Framework**: FastAPI + Uvicorn
+- **Language**: Python 3.10+
+
+**Frontend**:
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **UI**: Shadcn UI + Tailwind CSS
+- **Icons**: Lucide React
 
 ## Documentation
 
-- **[System Overview](docs/SYSTEM_OVERVIEW.md)** - Complete architecture and agent details
-- **[API Reference](docs/API_REFERENCE.md)** - Endpoint documentation
+📚 **Complete documentation** in `/docs`:
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Detailed system design and agent workflows
+- **[SETUP.md](docs/SETUP.md)** - Installation and configuration guide
+- **[API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API endpoint documentation
+- **[FRONTEND.md](docs/FRONTEND.md)** - Frontend components and features
+- **[TAVILY_BUG_REPORT.md](TAVILY_BUG_REPORT.md)** - Discovered Tavily Extract API bug
 
 ## Performance
 
-- **Latency:** 30-45 seconds per request
-- **API Calls:** 3 Tavily searches, 20-30 OpenAI completions
-- **Cost:** ~$0.015 per request
-- **Accuracy:** 0% false positive rate (validated)
+- **Response Time**: 30-32 seconds per recipe request
+- **Tavily Calls**: 5 searches per request
+- **LLM Calls**: 12 GPT-3.5-turbo completions per request
+- **Cost**: ~$0.017 per request ($0.005 Tavily + $0.012 OpenAI)
+- **Optimization**: 60-70% faster than v1.0 (removed technique validator, limited to 5 recipes)
 
 ## Project Structure
 
 ```
 ratatouille-project/
 ├── backend/
-│   ├── agents/
-│   │   ├── research_planner.py
-│   │   ├── recipe_hunter.py
-│   │   ├── technique_validator.py
-│   │   ├── personalization.py
-│   │   └── nutrition_analyzer.py
-│   ├── app.py              # FastAPI application
-│   ├── graph.py            # LangGraph workflow
-│   └── state.py            # State schema
-├── docs/
-│   ├── SYSTEM_OVERVIEW.md
-│   └── API_REFERENCE.md
-├── requirements.txt
-├── .env.example
-└── README.md
+│   ├── agents/                    # 4 specialized agents + intent extractor
+│   │   ├── research_planner.py   # Query generation
+│   │   ├── recipe_hunter.py      # Tavily search + parsing
+│   │   ├── personalization.py    # Scoring and selection
+│   │   ├── nutrition_analyzer.py # Nutrition estimation
+│   │   └── intent_extractor.py   # User intent parsing
+│   ├── app.py                     # FastAPI application
+│   ├── graph.py                   # LangGraph workflow definition
+│   ├── state.py                   # RecipeState schema
+│   ├── config.py                  # Configuration
+│   └── logger.py                  # Logging setup
+├── frontend/
+│   ├── app/                       # Next.js pages (App Router)
+│   │   ├── chat/                 # Main chat interface
+│   │   ├── cook/                 # Interactive cooking mode
+│   │   └── cookbook/             # Saved recipes
+│   ├── components/               # React components
+│   │   ├── RecipeCard.tsx
+│   │   ├── Navigation.tsx
+│   │   ├── Timer.tsx
+│   │   └── ...
+│   ├── lib/                      # Utilities and types
+│   │   ├── api.ts               # API client
+│   │   └── types.ts             # TypeScript definitions
+│   └── public/                  # Static assets
+├── docs/                        # Comprehensive documentation
+│   ├── ARCHITECTURE.md         # System design
+│   ├── SETUP.md                # Installation guide
+│   ├── API_REFERENCE.md        # API documentation
+│   └── FRONTEND.md             # Frontend guide
+├── requirements.txt            # Python dependencies
+├── .env.example               # Environment template
+├── TAVILY_BUG_REPORT.md      # Discovered API bug
+└── README.md                  # This file
 ```
 
-## Example Output
+## Features Deep Dive
 
+### 🎯 Chat Interface
+- Natural language recipe requests
+- Conversational follow-up Q&A
+- Agent progress visualization
+- Recipe bookmarking and exclusion
+- Persistent chat history (localStorage)
+
+### 🧑‍🍳 Interactive Cooking Mode
+- Step-by-step guided cooking
+- Built-in timers for each step
+- Ingredient checklists
+- XP rewards and gamification
+- Key technique highlights
+
+### 📚 Personal Cookbook
+- Save favorite recipes
+- View all bookmarked recipes
+- Quick access to "Let's Cook" mode
+- Persistent storage
+
+### 🤖 Multi-Agent Backend
+- **Research Planner**: Generates 5 diverse search queries
+- **Recipe Hunter**: Searches and parses recipes from Tavily
+- **Personalization Engine**: Scores recipes on learning value, skill match, recency
+- **Nutrition Analyzer**: Estimates nutrition using GPT
+
+### 🔄 Smart Coordination
+- Automatic retry with broader search if < 2 recipes found
+- Conditional routing based on agent results
+- Shared state management via LangGraph
+
+## Example Workflow
+
+**User**: "I want to learn pan sauces for beginners"
+
+**Research Planner** generates queries:
+```
+1. "garlic butter pan sauce chicken recipe beginner"
+2. "red wine shallot pan sauce steak recipe easy"
+3. "mushroom cream pan sauce pork recipe simple"
+...
+```
+
+**Recipe Hunter** searches and returns structured recipes
+
+**Personalization** scores and selects top 3:
 ```json
 {
-  "recipes": [
-    {
-      "recipe": {
-        "title": "Pan-Seared Chicken with Lemon Butter Sauce",
-        "difficulty": "intermediate",
-        "time_estimate": "45 minutes"
-      },
-      "reasoning": "Perfect for mastering pan sauce fundamentals...",
-      "technique_highlights": [
-        "Pan deglazing with wine",
-        "Butter emulsion (mounting)",
-        "Temperature control"
-      ],
-      "nutrition": {
-        "calories": 450,
-        "protein_g": 25,
-        "servings": 4
-      }
-    }
-  ]
+  "recipe": {
+    "title": "Steak with Red Wine Pan Sauce",
+    "difficulty": "intermediate",
+    "time_estimate": "45 minutes"
+  },
+  "reasoning": "This recipe teaches fundamental pan sauce techniques including deglazing, reduction, and butter mounting - essential skills for any home cook.",
+  "technique_highlights": [
+    "Pan deglazing with red wine",
+    "Butter emulsion (mounting butter)",
+    "Proper temperature control for searing"
+  ],
+  "nutrition": {
+    "calories": 450,
+    "protein_g": 25,
+    "carbs_g": 35,
+    "fat_g": 18,
+    "servings": 4
+  },
+  "score": 87.5
 }
 ```
+
+**Result**: 3 personalized recipes in 30 seconds
+
+---
+
+## Contributing
+
+Contributions welcome! See the [architecture docs](docs/ARCHITECTURE.md) for system design details.
+
+**Areas for improvement**:
+- Add unit tests for agents
+- Implement real nutrition database
+- Add recipe caching
+- Parallel LLM calls for better performance
+
+## Known Issues
+
+- **Tavily Extract API**: Sometimes misses ingredient lists (documented in [TAVILY_BUG_REPORT.md](TAVILY_BUG_REPORT.md))
+- **Response time**: 30s is still slow for demos (inherent to multiple LLM calls)
+- **No authentication**: Not production-ready without user accounts
 
 ## License
 
@@ -145,8 +236,16 @@ MIT
 
 ## Authors
 
-Brandon Qin
+**Brandon Qin** - [GitHub](https://github.com/brooondooon)
 
----
+## Acknowledgments
 
-**Built with [LangGraph](https://github.com/langchain-ai/langgraph) and [Tavily](https://tavily.com)**
+Built for [Tavily](https://tavily.com) technical PM interview take-home assignment.
+
+**Technologies**:
+- [LangGraph](https://github.com/langchain-ai/langgraph) - Multi-agent orchestration
+- [Tavily](https://tavily.com) - Search API
+- [OpenAI](https://openai.com) - GPT-3.5-turbo
+- [Shadcn UI](https://ui.shadcn.com) - Component library
+- [Next.js](https://nextjs.org) - React framework
+- [FastAPI](https://fastapi.tiangolo.com) - Python web framework
