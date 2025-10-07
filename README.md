@@ -8,7 +8,7 @@ An intelligent recipe recommendation system that helps home cooks learn culinary
 
 **Problem:** Home cooks searching for recipes to learn specific techniques face a frustrating challenge—generic recipe search returns thousands of results with no way to filter by skill level or learning value. A beginner searching "pan sauces" gets the same results as an expert, buried in food blogs and ads, with no guarantee the recipe actually teaches the technique properly.
 
-**Solution:** Ratatouille is a **4-agent multi-agent system** built with LangGraph that solves this by combining **real-time web search** (Tavily API) with **intelligent filtering and personalization**. Instead of static recipe databases, Ratatouille searches the live web for the most recent, high-quality recipes, then uses specialized agents to:
+**Solution:** Ratatouille is a **multi-agent system with 4 specialized sub-agents** built with LangGraph that solves this by combining **real-time web search** (Tavily API) with **intelligent filtering and personalization**. Instead of static recipe databases, Ratatouille searches the live web for the most recent, high-quality recipes, then uses specialized sub-agents to:
 
 1. **Validate** recipes genuinely teach your target technique (not just keyword matches)
 2. **Score** recipes on educational value, skill appropriateness, and technique diversity
@@ -24,7 +24,7 @@ https://github.com/brooondooon/ratatouille/assets/Demo%20Video.mp4
 - 🎯 **Smart Recipe Discovery** - Conversational interface for natural language requests
 - 🧑‍🍳 **Interactive Cooking Mode** - Step-by-step guidance with timers and XP rewards
 - 📚 **Personal Cookbook** - Bookmark and organize favorite recipes
-- 🤖 **4-Agent Coordination** - Specialized agents for planning, hunting, personalizing, and nutrition
+- 🤖 **4 Specialized Sub-Agents** - Research planner, recipe hunter, personalization engine, and nutrition analyzer
 - ⚡ **Real-Time Search** - Tavily API ensures fresh, up-to-date recipes from across the web
 - 🍎 **Nutrition Intelligence** - Automatic nutrition estimation per serving
 
@@ -68,14 +68,14 @@ cd frontend && npm run dev
 
 ## Architecture
 
-### 4-Agent System
+### Multi-Agent System with 4 Specialized Sub-Agents
 
 1. **Research Planner** - Generates optimal search queries based on learning goals
 2. **Recipe Hunter** - Searches Tavily API and parses recipes into structured format
 3. **Personalization Engine** - Scores, filters, and selects top 3 recipes with reasoning
 4. **Nutrition Analyzer** - Estimates nutritional information using GPT
 
-**Agent Coordination**: Conditional routing with automatic retry logic when insufficient results are found.
+**Sub-Agent Coordination**: Conditional routing with automatic retry logic when insufficient results are found.
 
 ### Technology Stack
 
@@ -171,15 +171,15 @@ ratatouille-project/
 - Quick access to "Let's Cook" mode
 - Persistent storage
 
-### 🤖 Multi-Agent Backend
+### 🤖 Multi-Agent Backend with Specialized Sub-Agents
 - **Research Planner**: Generates 5 diverse search queries
 - **Recipe Hunter**: Searches and parses recipes from Tavily
 - **Personalization Engine**: Scores recipes on learning value, skill match, recency
 - **Nutrition Analyzer**: Estimates nutrition using GPT
 
-### 🔄 Smart Coordination
+### 🔄 Smart Sub-Agent Coordination
 - Automatic retry with broader search if < 2 recipes found
-- Conditional routing based on agent results
+- Conditional routing based on sub-agent results
 - Shared state management via LangGraph
 
 ## Example Workflow
