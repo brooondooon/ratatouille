@@ -6,16 +6,18 @@ An intelligent recipe recommendation system that helps home cooks learn culinary
 
 ## Overview
 
-**The Problem**: Home cooks searching for recipes to learn specific techniques face a frustrating challenge—generic recipe search returns thousands of results with no way to filter by skill level or learning value. A beginner searching "pan sauces" gets the same results as an expert, buried in food blogs and ads, with no guarantee the recipe actually teaches the technique properly.
+**Problem:** Home cooks searching for recipes to learn specific techniques face a frustrating challenge—generic recipe search returns thousands of results with no way to filter by skill level or learning value. A beginner searching "pan sauces" gets the same results as an expert, buried in food blogs and ads, with no guarantee the recipe actually teaches the technique properly.
 
-**The Solution**: Ratatouille is a **4-agent multi-agent system** built with LangGraph that solves this by combining **real-time web search** (Tavily API) with **intelligent filtering and personalization**. Instead of static recipe databases, Ratatouille searches the live web for the most recent, high-quality recipes, then uses specialized agents to:
+**Solution:** Ratatouille is a **4-agent multi-agent system** built with LangGraph that solves this by combining **real-time web search** (Tavily API) with **intelligent filtering and personalization**. Instead of static recipe databases, Ratatouille searches the live web for the most recent, high-quality recipes, then uses specialized agents to:
 
 1. **Validate** recipes genuinely teach your target technique (not just keyword matches)
 2. **Score** recipes on educational value, skill appropriateness, and technique diversity
 3. **Personalize** by selecting the top 3 recipes that match your exact skill level and learning goals
 4. **Enrich** with nutritional data and technique highlights
 
-The result: **Personalized, educational recipe recommendations in 30 seconds**—not generic search results, but curated learning paths backed by fresh, authoritative content from across the web.
+## Demo Video
+
+https://github.com/brooondooon/ratatouille/assets/Demo%20Video.mp4
 
 ### Key Features
 
