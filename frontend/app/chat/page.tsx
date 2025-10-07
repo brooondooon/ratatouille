@@ -128,9 +128,16 @@ export default function ChatPage() {
       // If we already have recipes, this is a follow-up question
       const isFollowUp = recipes.length > 0
 
+      // Get all previously shown recipes (from current session + saved recipes)
+      const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]')
+      const savedUrls = savedRecipes.map((r: any) => r.recipe.url)
+      const currentUrls = recipes.map(r => r.recipe.url)
+      const allExcludedUrls = [...new Set([...excludedRecipes, ...savedUrls, ...currentUrls])]
+
       const response = await sendChatMessage({
         message: userMessage,
-        is_follow_up: isFollowUp
+        is_follow_up: isFollowUp,
+        excluded_urls: allExcludedUrls
       })
 
       clearInterval(progressInterval)

@@ -4,6 +4,7 @@ import { Navigation } from "@/components/Navigation"
 import { RecipeCard } from "@/components/RecipeCard"
 import { useState, useEffect } from "react"
 import type { RecipeCard as RecipeCardType } from "@/lib/types"
+import Image from "next/image"
 
 export default function CookbookPage() {
   const [savedRecipes, setSavedRecipes] = useState<RecipeCardType[]>([])
@@ -35,7 +36,15 @@ export default function CookbookPage() {
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="space-y-8">
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold">My Cookbook</h1>
+            <div className="flex items-center justify-center gap-3">
+              <Image
+                src="/cookbook-icon.svg"
+                alt=""
+                width={40}
+                height={40}
+              />
+              <h1 className="text-4xl font-bold">My Cookbook</h1>
+            </div>
             <p className="text-gray-600">
               {savedRecipes.length === 0
                 ? "Save recipes by clicking the bookmark icon to see them here"

@@ -37,38 +37,30 @@ def recipe_hunter_agent(state: RecipeState) -> RecipeState:
 
     print(f"🔎 Recipe Hunter: Searching with {len(search_queries)} queries")
 
-    # Search and parse recipes from snippets
-    for query in search_queries[:3]:
+    # Search and parse recipes from snippets - collect MORE recipes for diversity
+    for query in search_queries[:5]:  # Use all 5 queries for diversity
         try:
             results = tavily_client.search(
                 query=query + " recipe",
                 search_depth="advanced",
-                max_results=5,
+                max_results=3,  # Get 3 results per query
                 days=730
             )
             tavily_call_count += 1
 
-            # Parse top results from this query
+            # Parse top 2 results from this query
             for result in results.get("results", [])[:2]:
                 parsed_recipe = _parse_recipe_from_snippet(result, openai_client, state)
                 if parsed_recipe:
                     all_recipes.append(parsed_recipe)
-
-                # Stop if we have enough recipes
-                if len(all_recipes) >= 2:
-                    break
 
         except Exception as e:
             error_msg = f"Tavily search failed for '{query}': {str(e)}"
             print(f"   ⚠️ {error_msg}")
             state["errors"].append(error_msg)
 
-        # Stop if we have enough recipes
-        if len(all_recipes) >= 2:
-            break
-
-    # Update state
-    state["raw_recipes"] = all_recipes[:2]  # Ensure max 2 recipes
+    # Update state - return up to 10 recipes for personalization to choose from
+    state["raw_recipes"] = all_recipes[:10]
     state["tavily_calls"] = state.get("tavily_calls", 0) + tavily_call_count
 
     print(f"✅ Recipe Hunter: Found {len(state['raw_recipes'])} recipes")

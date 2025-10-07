@@ -48,7 +48,15 @@ def research_planner_agent(state: RecipeState) -> RecipeState:
         - Focus on SPECIFIC DISHES with the technique, NOT technique tutorials
         - Each query should find a COMPLETE RECIPE for a dish
         - Include dish names + technique + skill level
-        - Ensure variety (different proteins/ingredients/cuisines)
+        - MAXIMIZE VARIETY: Each query must use DIFFERENT ingredients, proteins, or flavor profiles
+        - Avoid similar variations (e.g., don't return "red wine pan sauce" AND "red wine reduction")
+
+        DIVERSITY EXAMPLES:
+        For "pan sauces":
+        - "lemon butter pan sauce chicken recipe" (citrus/butter)
+        - "mushroom cream pan sauce steak recipe" (earthy/cream)
+        - "balsamic pan sauce pork recipe" (tangy/vinegar)
+        - "white wine herb pan sauce fish recipe" (wine/herbs)
 
         GOOD EXAMPLES:
         - "crispy shallow fried chicken cutlet recipe"
@@ -58,7 +66,7 @@ def research_planner_agent(state: RecipeState) -> RecipeState:
         BAD EXAMPLES (DO NOT USE):
         - "shallow frying technique guide"
         - "how to shallow fry tutorial"
-        - "shallow frying tips and tricks"
+        - "red wine pan sauce" AND "red wine reduction" (too similar)
         """
 
     # Add dietary restrictions to goal if specified
@@ -107,6 +115,8 @@ Example: ["crispy pan-fried chicken cutlet recipe", "shallow fried pork schnitze
 
     # Log for debugging
     print(f"🔍 Research Planner: Generated {len(search_queries)} queries")
+    for i, q in enumerate(search_queries, 1):
+        print(f"   {i}. {q}")
     if search_strategy == "broadened":
         print(f"   ↳ Retry #{retry_count + 1}: Broadened search strategy")
 

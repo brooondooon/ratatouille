@@ -146,16 +146,20 @@ Steps: {' '.join(recipe_steps[:3])}
 
 QUESTION: Does this recipe teach or relate to "{learning_goal}"?
 
-IMPORTANT: Be VERY LENIENT and INCLUSIVE:
-- Accept recipes that teach this technique OR variations of it
-- Accept recipes where this is a component or related skill
-- Accept recipes with similar ingredients/methods even if not exact
-- ONLY reject if the recipe is completely unrelated (e.g., "chocolate cake" for "sushi")
+IMPORTANT: Be EXTREMELY LENIENT and INCLUSIVE:
+- Accept recipes that teach this technique OR any variation of it
+- Accept recipes where this is a component, subset, or related skill
+- Accept recipes with similar ingredients/methods even if not exact match
+- For pan sauces: ANY sauce made in a pan with protein counts (butter sauces, wine sauces, cream sauces, etc.)
+- ONLY reject if the recipe is completely unrelated to the technique
 
 Examples:
+- "Lemon Garlic Butter Shrimp" for "pan sauces" → YES (butter sauce made in pan)
+- "Steak with Wine Reduction" for "pan sauces" → YES (wine sauce is a pan sauce)
+- "Mushroom Cream Sauce Chicken" for "pan sauces" → YES (cream sauce in pan)
 - "Salmon Avocado Rolls" for "sushi with salmon" → YES (it's a type of salmon sushi)
-- "Bread Pudding" for "bread baking" → YES (teaches bread-related skills)
 - "Fried Rice" for "pan sauces" → NO (completely different technique)
+- "Chocolate Cake" for "knife skills" → NO (unrelated)
 
 Answer with ONLY "YES" or "NO" followed by a brief reason.
 

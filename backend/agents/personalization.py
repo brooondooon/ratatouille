@@ -51,8 +51,11 @@ def personalization_engine_agent(state: RecipeState) -> RecipeState:
     # Filter out excluded URLs first
     if excluded_urls:
         print(f"   ⚠️ Filtering out {len(excluded_urls)} excluded recipes")
+        print(f"   📋 Excluded URLs: {excluded_urls[:3]}..." if len(excluded_urls) > 3 else f"   📋 Excluded URLs: {excluded_urls}")
+        before_count = len(raw_recipes)
         raw_recipes = [r for r in raw_recipes if r.get("url") not in excluded_urls]
-        print(f"   ✓ {len(raw_recipes)} recipes remaining after exclusion filter")
+        filtered_count = before_count - len(raw_recipes)
+        print(f"   ✓ Filtered out {filtered_count} recipes, {len(raw_recipes)} remaining")
 
     # Step 1: Filter recipes
     filtered_recipes = _filter_recipes(
@@ -294,19 +297,28 @@ def _select_diverse_recipes(
         for s in selected:
             selected_title = s["recipe"].get("title", "").lower()
             # Extract key dish words (remove common words)
-            common_words = {"with", "and", "the", "in", "for", "to", "recipe", "easy", "simple", "best", "a", "an"}
+            common_words = {"with", "and", "the", "in", "for", "to", "recipe", "easy", "simple", "best", "a", "an", "how", "make", "homemade"}
             candidate_words = set(word for word in candidate_title.split() if word not in common_words)
             selected_words = set(word for word in selected_title.split() if word not in common_words)
 
-            # If more than 40% of meaningful words overlap, consider it similar (stricter than before)
+            # Check for shared key ingredients/types (e.g., both mention "red wine")
+            key_ingredients = candidate_words & selected_words
+
+            # If they share 2+ key words (like "red" + "wine"), they're too similar
+            if len(key_ingredients) >= 2:
+                is_similar_dish = True
+                break
+
+            # Otherwise, if more than 30% of meaningful words overlap, consider it similar
             if candidate_words and selected_words:
                 overlap = len(candidate_words & selected_words) / min(len(candidate_words), len(selected_words))
-                if overlap > 0.4:
+                if overlap > 0.3:
                     is_similar_dish = True
                     break
 
         # Skip if it's a similar dish
         if is_similar_dish:
+            print(f"   🔄 Skipping similar recipe: {candidate_title} (too similar to already selected)")
             continue
 
         # Check for technique diversity

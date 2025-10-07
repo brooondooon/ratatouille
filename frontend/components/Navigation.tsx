@@ -40,7 +40,10 @@ export function Navigation() {
             <Link href="/chat">
               <Button
                 variant={pathname?.startsWith('/chat') ? 'default' : 'ghost'}
-                className="transition-all"
+                className={cn(
+                  "transition-all",
+                  pathname?.startsWith('/chat') && "pointer-events-none"
+                )}
               >
                 Chat
               </Button>
@@ -48,7 +51,10 @@ export function Navigation() {
             <Link href="/cookbook">
               <Button
                 variant={pathname?.startsWith('/cookbook') ? 'default' : 'ghost'}
-                className="transition-all"
+                className={cn(
+                  "transition-all",
+                  pathname?.startsWith('/cookbook') && "pointer-events-none"
+                )}
               >
                 Cookbook
               </Button>
