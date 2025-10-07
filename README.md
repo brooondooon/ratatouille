@@ -98,7 +98,6 @@ cd frontend && npm run dev
 - **[SETUP.md](docs/SETUP.md)** - Installation and configuration guide
 - **[API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API endpoint documentation
 - **[FRONTEND.md](docs/FRONTEND.md)** - Frontend components and features
-- **[TAVILY_BUG_REPORT.md](TAVILY_BUG_REPORT.md)** - Discovered Tavily Extract API bug
 
 ## Performance
 
@@ -145,7 +144,6 @@ ratatouille-project/
 │   └── FRONTEND.md             # Frontend guide
 ├── requirements.txt            # Python dependencies
 ├── .env.example               # Environment template
-├── TAVILY_BUG_REPORT.md      # Discovered API bug
 └── README.md                  # This file
 ```
 
