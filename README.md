@@ -228,7 +228,6 @@ Contributions welcome! See the [architecture docs](docs/ARCHITECTURE.md) for sys
 
 ## Known Issues
 
-- **Tavily Extract API**: Sometimes misses ingredient lists (documented in [TAVILY_BUG_REPORT.md](TAVILY_BUG_REPORT.md))
 - **Response time**: 30s is still slow for demos (inherent to multiple LLM calls)
 - **No authentication**: Not production-ready without user accounts
 
@@ -241,8 +240,6 @@ MIT
 **Brandon Qin** - [GitHub](https://github.com/brooondooon)
 
 ## Acknowledgments
-
-Built for [Tavily](https://tavily.com) technical PM interview take-home assignment.
 
 **Technologies**:
 - [LangGraph](https://github.com/langchain-ai/langgraph) - Multi-agent orchestration
