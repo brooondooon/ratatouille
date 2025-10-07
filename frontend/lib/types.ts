@@ -56,6 +56,7 @@ export interface RecommendationRequest {
 // Chat API types
 export interface ChatRequest {
   message: string
+  is_follow_up?: boolean
 }
 
 export interface ChatResponse {

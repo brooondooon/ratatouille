@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navigation } from "@/components/Navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +26,49 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [recipes, setRecipes] = useState<RecipeCardType[]>([])
   const [agentSteps, setAgentSteps] = useState<AgentStep[]>(AGENT_STEPS)
+
+  // Load chat state from localStorage on mount and when storage changes
+  useEffect(() => {
+    const loadChatState = () => {
+      const savedMessages = localStorage.getItem('chatMessages')
+      const savedRecipes = localStorage.getItem('chatRecipes')
+
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages))
+      } else {
+        setMessages([])
+      }
+
+      if (savedRecipes) {
+        setRecipes(JSON.parse(savedRecipes))
+      } else {
+        setRecipes([])
+      }
+    }
+
+    // Load on mount
+    loadChatState()
+
+    // Listen for storage changes (e.g., when logo is clicked)
+    window.addEventListener('storage', loadChatState)
+
+    return () => {
+      window.removeEventListener('storage', loadChatState)
+    }
+  }, [])
+
+  // Save chat state to localStorage whenever it changes
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('chatMessages', JSON.stringify(messages))
+    }
+  }, [messages])
+
+  useEffect(() => {
+    if (recipes.length > 0) {
+      localStorage.setItem('chatRecipes', JSON.stringify(recipes))
+    }
+  }, [recipes])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -60,7 +103,13 @@ export default function ChatPage() {
     }, 6000) // Update every 6 seconds
 
     try {
-      const response = await sendChatMessage({ message: userMessage })
+      // If we already have recipes, this is a follow-up question
+      const isFollowUp = recipes.length > 0
+
+      const response = await sendChatMessage({
+        message: userMessage,
+        is_follow_up: isFollowUp
+      })
 
       clearInterval(progressInterval)
 
@@ -104,12 +153,16 @@ export default function ChatPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <Navigation />
-        <div className="flex-1 flex items-center justify-center px-6">
+        <div className="flex-1 flex items-center justify-center px-6 pb-32">
           <div className="max-w-2xl w-full space-y-8">
             {/* Hero */}
             <div className="text-center space-y-4">
-              <div className="inline-block p-4 bg-black rounded-full mb-4">
-                <span className="text-5xl">🐀</span>
+              <div className="inline-flex items-center justify-center mb-4">
+                <img
+                  src="/ratatouille-logo.svg"
+                  alt="Ratatouille"
+                  className="w-40 h-40"
+                />
               </div>
               <h1 className="text-4xl font-bold">Ratatouille</h1>
               <p className="text-lg text-gray-600">

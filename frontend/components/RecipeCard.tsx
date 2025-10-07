@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ExternalLink, Clock, Star, ChevronDown } from "lucide-react"
+import { ExternalLink, Clock, Star, ChevronDown, Bookmark } from "lucide-react"
 import type { RecipeCard as RecipeCardType } from "@/lib/types"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface RecipeCardProps {
   data: RecipeCardType
+  compact?: boolean
 }
 
 const difficultyStars = {
@@ -17,10 +18,33 @@ const difficultyStars = {
   advanced: 3
 }
 
-export function RecipeCard({ data }: RecipeCardProps) {
+export function RecipeCard({ data, compact = false }: RecipeCardProps) {
   const { recipe, reasoning, technique_highlights, nutrition } = data
   const stars = difficultyStars[recipe.difficulty]
   const [instructionsOpen, setInstructionsOpen] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+
+  // Check if recipe is saved on mount
+  useEffect(() => {
+    const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]')
+    setIsSaved(savedRecipes.some((r: RecipeCardType) => r.recipe.url === recipe.url))
+  }, [recipe.url])
+
+  const toggleSave = () => {
+    const savedRecipes = JSON.parse(localStorage.getItem('savedRecipes') || '[]')
+
+    if (isSaved) {
+      // Remove from saved
+      const filtered = savedRecipes.filter((r: RecipeCardType) => r.recipe.url !== recipe.url)
+      localStorage.setItem('savedRecipes', JSON.stringify(filtered))
+      setIsSaved(false)
+    } else {
+      // Add to saved
+      savedRecipes.push(data)
+      localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes))
+      setIsSaved(true)
+    }
+  }
 
   return (
     <Card className="w-full min-h-[500px] flex flex-col relative overflow-hidden">
@@ -35,11 +59,21 @@ export function RecipeCard({ data }: RecipeCardProps) {
       </div>
 
       <CardHeader className="pt-8 space-y-3">
-        {/* Title with emoji */}
-        <h2 className="text-2xl font-bold leading-tight flex items-start gap-2">
-          <span className="text-2xl">🍳</span>
-          <span className="flex-1">{recipe.title}</span>
-        </h2>
+        {/* Title with emoji and bookmark */}
+        <div className="flex items-start gap-2">
+          <h2 className="text-2xl font-bold leading-tight flex items-start gap-2 flex-1">
+            <span className="text-2xl">🍳</span>
+            <span className="flex-1">{recipe.title}</span>
+          </h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSave}
+            className="h-8 w-8 shrink-0"
+          >
+            <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-current' : ''}`} />
+          </Button>
+        </div>
 
         {/* Metadata row */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">

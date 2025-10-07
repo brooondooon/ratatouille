@@ -14,6 +14,52 @@ from backend.logger import get_logger
 logger = get_logger("intent_extractor")
 
 
+def is_follow_up_question(message: str) -> bool:
+    """
+    Detect if the message is a follow-up question vs a new recipe request.
+
+    Follow-up questions are things like:
+    - "How do I make sure my sushi rice is good?"
+    - "What temperature should I use?"
+    - "Can I substitute X for Y?"
+    - "How long should I cook this?"
+
+    New requests are things like:
+    - "Show me easy sushi recipes"
+    - "I want to learn pan sauces"
+    - "Advanced bread baking"
+
+    Args:
+        message: The user's message
+
+    Returns:
+        True if it's a follow-up question, False if it's a new recipe request
+    """
+    message_lower = message.lower().strip()
+
+    # Question indicators
+    question_words = ['how', 'what', 'why', 'when', 'where', 'which', 'can i', 'should i', 'do i']
+    is_question = any(message_lower.startswith(q) for q in question_words) or message.endswith('?')
+
+    # Recipe request indicators
+    request_phrases = [
+        'show me', 'find me', 'i want to learn', 'teach me', 'give me',
+        'looking for', 'need recipes', 'want recipes', 'search for'
+    ]
+    is_request = any(phrase in message_lower for phrase in request_phrases)
+
+    # If it's clearly a request, it's not a follow-up
+    if is_request:
+        return False
+
+    # If it's a question and not a request, it's likely a follow-up
+    if is_question:
+        return True
+
+    # Default: assume it's a recipe request
+    return False
+
+
 def answer_follow_up(message: str) -> str:
     """
     Answer a follow-up question about cooking using GPT.

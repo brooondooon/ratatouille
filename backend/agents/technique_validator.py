@@ -81,15 +81,15 @@ def _define_technique(
     """
     prompt = f"""You are a professional chef and culinary educator. Define what the cooking technique "{learning_goal}" actually means.
 
-Provide a clear, specific definition that explains:
+Provide a BROAD, INCLUSIVE definition that explains:
 1. What the technique is
-2. The key steps involved
-3. What distinguishes it from similar techniques
+2. Common variations and related skills
+3. What types of recipes would teach this
 
-Be concise (2-3 sentences). Focus on the CORE TECHNIQUE, not variations.
+Be concise (2-3 sentences). INCLUDE variations and related techniques.
 
 Example for "pan sauces":
-"A pan sauce is made by deglazing the fond (browned bits) left in a pan after searing protein. The technique involves adding liquid (wine, stock, etc.) to dissolve the fond, then reducing and often finishing with butter or cream to create an emulsified sauce. The key is using the caramelized drippings as the flavor base."
+"A pan sauce is made by deglazing the fond (browned bits) left in a pan after searing protein. The technique involves adding liquid (wine, stock, etc.) to dissolve the fond, then reducing and often finishing with butter or cream to create an emulsified sauce. Any recipe that involves making a sauce in a pan after cooking protein teaches this skill."
 
 Now define: "{learning_goal}"
 
@@ -144,16 +144,20 @@ Title: {recipe_title}
 Techniques listed: {', '.join(recipe_techniques)}
 Steps: {' '.join(recipe_steps[:3])}
 
-QUESTION: Does this recipe teach "{learning_goal}"?
+QUESTION: Does this recipe teach or relate to "{learning_goal}"?
 
-Be LENIENT - accept if the recipe is related or teaches this skill, even partially.
-Only reject obvious false positives (e.g., "fried rice" for "pan sauces").
-
-Answer with ONLY "YES" or "NO" followed by a brief reason.
+IMPORTANT: Be VERY LENIENT and INCLUSIVE:
+- Accept recipes that teach this technique OR variations of it
+- Accept recipes where this is a component or related skill
+- Accept recipes with similar ingredients/methods even if not exact
+- ONLY reject if the recipe is completely unrelated (e.g., "chocolate cake" for "sushi")
 
 Examples:
-"YES - Sourdough teaches bread baking fundamentals."
-"NO - Fried rice doesn't involve making pan sauces."
+- "Salmon Avocado Rolls" for "sushi with salmon" → YES (it's a type of salmon sushi)
+- "Bread Pudding" for "bread baking" → YES (teaches bread-related skills)
+- "Fried Rice" for "pan sauces" → NO (completely different technique)
+
+Answer with ONLY "YES" or "NO" followed by a brief reason.
 
 Your answer:"""
 

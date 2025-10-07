@@ -79,6 +79,7 @@ class RecommendationResponse(BaseModel):
 class ChatRequest(BaseModel):
     """Request body for conversational recipe chat."""
     message: str = Field(..., min_length=3, max_length=500, description="Natural language cooking request")
+    is_follow_up: bool = Field(default=False, description="Whether this is a follow-up question (vs initial recipe request)")
 
     @field_validator('message')
     def validate_message(cls, v):
@@ -89,7 +90,8 @@ class ChatRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "message": "I want to learn shallow frying without experience and minimize oil usage"
+                "message": "I want to learn shallow frying without experience and minimize oil usage",
+                "is_follow_up": False
             }
         }
 
@@ -203,31 +205,54 @@ async def chat(request: ChatRequest):
     Conversational endpoint that accepts natural language cooking requests.
 
     This endpoint:
-    1. Extracts intent from natural language (via LLM)
-    2. Calls the existing recommendation workflow
-    3. Returns recipes with a conversational reply
+    1. Detects if it's a follow-up question or a new recipe request
+    2. For follow-ups: answers with GPT (no workflow)
+    3. For new requests: runs the full multi-agent workflow
 
     Examples:
-    - "I want to learn shallow frying without experience"
-    - "Show me vegetarian pan sauce recipes for beginners"
-    - "Advanced bread baking techniques"
+    - "I want to learn shallow frying without experience" → New request (workflow)
+    - "How do I make sure my sushi rice is good?" → Follow-up (GPT answer)
     """
     start_time = time.time()
 
     logger.info(f"Chat request: {request.message}")
 
     try:
-        # Step 1: Extract intent from natural language
+        # Step 1: Check if this is a follow-up question (based on client flag)
+        if request.is_follow_up:
+            logger.info("Follow-up question detected, answering with GPT")
+
+            # Answer the question directly with GPT (no workflow)
+            reply = answer_follow_up(request.message)
+
+            processing_time_ms = round((time.time() - start_time) * 1000)
+
+            # Return answer with no recipes
+            response = ChatResponse(
+                reply=reply,
+                recipes=[],
+                metadata={
+                    "is_follow_up": True,
+                    "llm_calls": 1,
+                    "processing_time_ms": processing_time_ms
+                }
+            )
+
+            logger.info(f"Follow-up answered in {processing_time_ms}ms")
+            return response
+
+        # Step 2: It's a new recipe request - extract intent
+        logger.info("Detected recipe request, running workflow")
         intent = extract_intent(request.message)
 
-        # Step 2: Create initial state from extracted intent
+        # Step 3: Create initial state from extracted intent
         initial_state = create_initial_state(
             learning_goal=intent["learning_goal"],
             skill_level=intent["skill_level"],
             dietary_restrictions=intent.get("dietary_restrictions", [])
         )
 
-        # Step 3: Run the existing multi-agent workflow
+        # Step 4: Run the existing multi-agent workflow
         final_state = workflow_app.invoke(initial_state)
 
         # Check if we got results
@@ -240,7 +265,7 @@ async def chat(request: ChatRequest):
         # Calculate processing time
         processing_time_ms = round((time.time() - start_time) * 1000)
 
-        # Step 4: Generate conversational reply
+        # Step 5: Generate conversational reply
         num_recipes = len(final_state["final_cards"])
         learning_goal = intent["learning_goal"]
         skill_level = intent["skill_level"]
@@ -268,6 +293,7 @@ async def chat(request: ChatRequest):
                 for card in final_state["final_cards"]
             ],
             metadata={
+                "is_follow_up": False,
                 "extracted_intent": intent,
                 "tavily_calls": final_state.get("tavily_calls", 0),
                 "llm_calls": final_state.get("llm_calls", 0) + 1,  # +1 for intent extraction
