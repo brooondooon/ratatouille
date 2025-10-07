@@ -74,3 +74,37 @@ export async function sendChatMessage(
     throw new APIError(500, 'Network error - check your connection')
   }
 }
+
+export async function extractRecipe(
+  url: string,
+  timeoutMs = 30000
+): Promise<{ raw_content: string; success: boolean }> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch('http://localhost:8000/api/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+      signal: controller.signal
+    })
+
+    clearTimeout(timeout)
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+      throw new APIError(response.status, errorData.detail || `HTTP ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    clearTimeout(timeout)
+
+    if (error instanceof APIError) throw error
+    if (error.name === 'AbortError') {
+      throw new APIError(408, 'Request timeout - please try again')
+    }
+    throw new APIError(500, 'Network error - check your connection')
+  }
+}

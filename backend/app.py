@@ -103,6 +103,25 @@ class ChatResponse(BaseModel):
     metadata: dict
 
 
+class ExtractRequest(BaseModel):
+    """Request body for recipe extraction."""
+    url: str = Field(..., description="Recipe URL to extract content from")
+
+    @field_validator('url')
+    def validate_url(cls, v):
+        if not v.strip():
+            raise ValueError('URL cannot be empty')
+        if not v.startswith('http'):
+            raise ValueError('URL must start with http:// or https://')
+        return v.strip()
+
+
+class ExtractResponse(BaseModel):
+    """Response for recipe extraction."""
+    raw_content: str
+    success: bool
+
+
 # API Endpoints
 @app.get("/")
 async def root():
@@ -193,6 +212,65 @@ async def get_recommendations(request: RecommendationRequest):
         raise
     except Exception as e:
         logger.error(f"Request failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+
+@app.post("/api/extract", response_model=ExtractResponse)
+async def extract_recipe(request: ExtractRequest):
+    """
+    Extract full recipe content from a URL using Tavily Extract API.
+
+    This endpoint:
+    1. Takes a single recipe URL
+    2. Calls Tavily Extract API with basic depth
+    3. Returns markdown content
+
+    This is called on-demand when user clicks "Let's cook!" on a recipe.
+    """
+    from tavily import TavilyClient
+
+    logger.info(f"Extract request for URL: {request.url}")
+
+    try:
+        tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
+        # Call Tavily Extract API
+        result = tavily_client.extract(
+            urls=[request.url],
+            extract_depth="basic"
+        )
+
+        # Extract response structure: {"results": [{"url": ..., "raw_content": ...}], "failed_results": []}
+        if result.get("failed_results"):
+            logger.error(f"Tavily extract failed for {request.url}: {result['failed_results']}")
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to extract recipe content from URL"
+            )
+
+        results = result.get("results", [])
+        if not results:
+            raise HTTPException(
+                status_code=404,
+                detail="No content extracted from URL"
+            )
+
+        raw_content = results[0].get("raw_content", "")
+
+        logger.info(f"Successfully extracted {len(raw_content)} characters from {request.url}")
+
+        return ExtractResponse(
+            raw_content=raw_content,
+            success=True
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Extract request failed: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Internal server error: {str(e)}"

@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ExternalLink, Clock, Star, ChevronDown, Bookmark } from "lucide-react"
+import { ExternalLink, Clock, Star, ChevronDown, Bookmark, ChefHat } from "lucide-react"
 import type { RecipeCard as RecipeCardType } from "@/lib/types"
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 interface RecipeCardProps {
   data: RecipeCardType
@@ -23,6 +24,7 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
   const stars = difficultyStars[recipe.difficulty]
   const [instructionsOpen, setInstructionsOpen] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const router = useRouter()
 
   // Check if recipe is saved on mount
   useEffect(() => {
@@ -46,6 +48,11 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
     }
   }
 
+  const handleLetsCook = () => {
+    // Navigate to cook page with recipe URL
+    router.push(`/cook?url=${encodeURIComponent(recipe.url)}`)
+  }
+
   return (
     <Card className="w-full min-h-[500px] flex flex-col relative overflow-hidden">
       {/* Top decorative line */}
@@ -59,20 +66,32 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
       </div>
 
       <CardHeader className="pt-8 space-y-3">
-        {/* Title with emoji and bookmark */}
+        {/* Title with emoji and action icons */}
         <div className="flex items-start gap-2">
           <h2 className="text-2xl font-bold leading-tight flex items-start gap-2 flex-1">
             <span className="text-2xl">🍳</span>
             <span className="flex-1">{recipe.title}</span>
           </h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSave}
-            className="h-8 w-8 shrink-0"
-          >
-            <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-current' : ''}`} />
-          </Button>
+          <div className="flex gap-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.open(recipe.url, '_blank')}
+              className="h-8 w-8"
+              title="View original recipe"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSave}
+              className="h-8 w-8"
+              title={isSaved ? "Unsave recipe" : "Save recipe"}
+            >
+              <Bookmark className={`h-5 w-5 ${isSaved ? 'fill-current' : ''}`} />
+            </Button>
+          </div>
         </div>
 
         {/* Metadata row */}
@@ -203,21 +222,14 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
         {/* Divider */}
         <div className="h-px bg-black w-full" />
 
-        {/* View Recipe Button */}
+        {/* Let's Cook Button */}
         <Button
-          variant="outline"
-          className="w-full"
-          asChild
+          variant="default"
+          className="w-full bg-black hover:bg-black/90"
+          onClick={handleLetsCook}
         >
-          <a
-            href={recipe.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2"
-          >
-            View Full Recipe
-            <ExternalLink className="w-4 h-4" />
-          </a>
+          <ChefHat className="w-4 h-4 mr-2" />
+          Let's cook!
         </Button>
       </CardContent>
 
