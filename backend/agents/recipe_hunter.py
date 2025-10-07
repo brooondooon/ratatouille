@@ -37,7 +37,7 @@ def recipe_hunter_agent(state: RecipeState) -> RecipeState:
 
     print(f"🔎 Recipe Hunter: Searching with {len(search_queries)} queries")
 
-    # Search and parse recipes from snippets - collect MORE recipes for diversity
+    # Search and parse recipes from snippets - limit to top 5 for speed
     for query in search_queries[:5]:  # Use all 5 queries for diversity
         try:
             results = tavily_client.search(
@@ -48,8 +48,8 @@ def recipe_hunter_agent(state: RecipeState) -> RecipeState:
             )
             tavily_call_count += 1
 
-            # Parse top 2 results from this query
-            for result in results.get("results", [])[:2]:
+            # Parse only top 1 result from each query (5 total recipes instead of 10)
+            for result in results.get("results", [])[:1]:
                 parsed_recipe = _parse_recipe_from_snippet(result, openai_client, state)
                 if parsed_recipe:
                     all_recipes.append(parsed_recipe)
@@ -59,8 +59,8 @@ def recipe_hunter_agent(state: RecipeState) -> RecipeState:
             print(f"   ⚠️ {error_msg}")
             state["errors"].append(error_msg)
 
-    # Update state - return up to 10 recipes for personalization to choose from
-    state["raw_recipes"] = all_recipes[:10]
+    # Update state - return up to 5 recipes for personalization (optimized for speed)
+    state["raw_recipes"] = all_recipes[:5]
     state["tavily_calls"] = state.get("tavily_calls", 0) + tavily_call_count
 
     print(f"✅ Recipe Hunter: Found {len(state['raw_recipes'])} recipes")

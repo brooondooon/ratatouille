@@ -9,7 +9,6 @@ from langgraph.graph import StateGraph, END
 from backend.state import RecipeState
 from backend.agents.research_planner import research_planner_agent
 from backend.agents.recipe_hunter import recipe_hunter_agent
-from backend.agents.technique_validator import technique_validator_agent
 from backend.agents.personalization import personalization_engine_agent
 from backend.agents.nutrition_analyzer import nutrition_analyzer_agent
 
@@ -26,7 +25,7 @@ def route_after_recipe_hunter(state: RecipeState) -> str:
         state: Current workflow state
 
     Returns:
-        Next node name ("research_planner" for retry, "technique_validator" to continue)
+        Next node name ("research_planner" for retry, "personalization" to continue)
     """
     recipe_count = len(state.get('raw_recipes', []))
     retry_count = state.get('retry_count', 0)
@@ -42,9 +41,9 @@ def route_after_recipe_hunter(state: RecipeState) -> str:
 
         return "research_planner"  # Loop back for retry
 
-    # Enough recipes found or max retries reached - proceed to validation
-    print(f"✓ Found {recipe_count} recipes, proceeding to technique validation")
-    return "technique_validator"
+    # Enough recipes found or max retries reached - proceed to personalization
+    print(f"✓ Found {recipe_count} recipes, proceeding to personalization")
+    return "personalization"
 
 
 def create_workflow() -> StateGraph:
@@ -55,10 +54,9 @@ def create_workflow() -> StateGraph:
     1. Research Planner → generates search queries
     2. Recipe Hunter → searches and parses recipes
     3. [Conditional] If insufficient recipes → retry Research Planner
-    4. Technique Validator → filters out false positives using LLM understanding
-    5. Personalization Engine → scores and selects top 2
-    6. Nutrition Analyzer → adds nutrition estimates
-    7. END → return final results
+    4. Personalization Engine → scores and selects top 3 (trusting Tavily relevance)
+    5. Nutrition Analyzer → adds nutrition estimates
+    6. END → return final results
 
     Returns:
         Compiled LangGraph workflow
@@ -66,10 +64,9 @@ def create_workflow() -> StateGraph:
     # Initialize graph with state schema
     workflow = StateGraph(RecipeState)
 
-    # Add agent nodes (now 5 agents!)
+    # Add agent nodes (now 4 agents - removed technique validator for speed)
     workflow.add_node("research_planner", research_planner_agent)
     workflow.add_node("recipe_hunter", recipe_hunter_agent)
-    workflow.add_node("technique_validator", technique_validator_agent)
     workflow.add_node("personalization", personalization_engine_agent)
     workflow.add_node("nutrition_analyzer", nutrition_analyzer_agent)
 
@@ -79,19 +76,18 @@ def create_workflow() -> StateGraph:
     # Linear flow: Research Planner → Recipe Hunter
     workflow.add_edge("research_planner", "recipe_hunter")
 
-    # Conditional routing: Recipe Hunter → (retry OR validate)
+    # Conditional routing: Recipe Hunter → (retry OR personalization)
     # This is the key coordination mechanism - agents adapt based on results
     workflow.add_conditional_edges(
         "recipe_hunter",
         route_after_recipe_hunter,
         {
             "research_planner": "research_planner",      # Retry with broader search
-            "technique_validator": "technique_validator"  # Continue to validation
+            "personalization": "personalization"         # Continue to personalization
         }
     )
 
-    # Linear flow: Technique Validator → Personalization → Nutrition Analyzer → END
-    workflow.add_edge("technique_validator", "personalization")
+    # Linear flow: Personalization → Nutrition Analyzer → END
     workflow.add_edge("personalization", "nutrition_analyzer")
     workflow.add_edge("nutrition_analyzer", END)
 
@@ -99,7 +95,7 @@ def create_workflow() -> StateGraph:
     app = workflow.compile()
 
     print("✅ LangGraph workflow compiled successfully")
-    print("   Flow: Research Planner → Recipe Hunter → [retry check] → Technique Validator → Personalization → Nutrition → END")
+    print("   Flow: Research Planner → Recipe Hunter → [retry check] → Personalization → Nutrition → END")
 
     return app
 
