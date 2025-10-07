@@ -140,7 +140,7 @@ ratatouille-project/
 
 ## Features Deep Dive
 
-### 🎯 Chat Interface
+### 🎯 Chat with Ratatouille
 - Natural language recipe requests
 - Conversational follow-up Q&A
 - Agent progress visualization
@@ -175,7 +175,7 @@ ratatouille-project/
 
 **User**: "I want to learn pan sauces for beginners"
 
-**Research Planner** generates queries:
+**1. Research Planner** generates queries:
 ```
 1. "garlic butter pan sauce chicken recipe beginner"
 2. "red wine shallot pan sauce steak recipe easy"
@@ -183,9 +183,11 @@ ratatouille-project/
 ...
 ```
 
-**Recipe Hunter** searches and returns structured recipes
+**2. Recipe Hunter** searches and returns 5 structured recipes
 
-**Personalization** scores and selects top 3:
+**3. Personalization** scores and selects top 3 with reasoning
+
+**4. Nutrition Analyzer** adds nutrition data to each recipe:
 ```json
 {
   "recipe": {
@@ -210,7 +212,7 @@ ratatouille-project/
 }
 ```
 
-**Result**: 3 personalized recipes in 30 seconds
+**Result**: 3 personalized recipes with nutrition in 30 seconds
 
 ---
 
