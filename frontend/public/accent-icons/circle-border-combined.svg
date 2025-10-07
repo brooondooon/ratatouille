@@ -1,0 +1,32 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_39_3)">
+  <!-- Top edge - shorter width -->
+  <path d="M12 2.5C17 2.3 32 2.8 52 2.6C72 2.4 92 2.7 112 2.5C132 2.3 152 2.6 167 2.4C177 2.2 188 2.5 188 2.8" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Top-right corner -->
+  <path d="M188 2.8C190 2.9 192 3.2 194 4.5C196 6 197.2 8 197.5 10" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Right edge - with curves -->
+  <path d="M197.5 12C198.2 32 197.8 52 198.1 72C197.9 92 198.2 112 197.8 132C198.0 152 197.7 172 198.1 185" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Bottom-right corner -->
+  <path d="M198.1 185C197.8 187 196.5 189 194.5 190.5C192.2 192.2 189.5 192.8 188 192.5" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Bottom edge - shorter width -->
+  <path d="M188 192.5C175 192.7 160 192.2 140 192.4C120 192.6 100 192.3 80 192.5C60 192.7 40 192.4 25 192.6C15 192.8 12 192.5 12 192.2" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Bottom-left corner -->
+  <path d="M12 192.2C10 192.1 8 191.8 6 190.5C4 189 2.8 187 2.5 185" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Left edge - with curves -->
+  <path d="M2.5 185C2.2 165 2.8 145 2.1 125C2.9 105 2.2 85 2.8 65C2.0 45 2.7 25 2.1 12" stroke="black" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Top-left corner -->
+  <path d="M2.1 12C2.4 10 3.7 8 5.5 6.5C7.8 4.8 10.5 4.2 12 2.5" stroke="black" stroke-width="3" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_39_3">
+<rect width="200" height="200" fill="white"/>
+</clipPath>
+</defs>
+</svg>
