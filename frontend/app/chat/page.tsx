@@ -5,10 +5,11 @@ import { Navigation } from "@/components/Navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RecipeCard } from "@/components/RecipeCard"
-import { Loader2, Send } from "lucide-react"
+import { Loader2, Send, RefreshCcw } from "lucide-react"
 import { sendChatMessage, APIError } from "@/lib/api"
 import type { Message, RecipeCard as RecipeCardType, AgentStep } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 // Fake agent progress - updates every 6 seconds (30s / 5 agents = 6s each)
 const AGENT_STEPS: AgentStep[] = [
@@ -26,6 +27,16 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [recipes, setRecipes] = useState<RecipeCardType[]>([])
   const [agentSteps, setAgentSteps] = useState<AgentStep[]>(AGENT_STEPS)
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0)
+  const [excludedRecipes, setExcludedRecipes] = useState<string[]>([]) // Track recipe URLs to exclude
+
+  const loadingPhrases = [
+    "Searching for the perfect recipes...",
+    "Putting on my tiny chef hat...",
+    "Saying \"Yes Chef!\" as loud as I can...",
+    "Doing my best Carmy impression...",
+    "Putting out a kitchen fire..."
+  ]
 
   // Load chat state from localStorage on mount and when storage changes
   useEffect(() => {
@@ -69,6 +80,17 @@ export default function ChatPage() {
       localStorage.setItem('chatRecipes', JSON.stringify(recipes))
     }
   }, [recipes])
+
+  // Cycle through loading phrases
+  useEffect(() => {
+    if (!isLoading) return
+
+    const interval = setInterval(() => {
+      setLoadingPhraseIndex((prev) => (prev + 1) % loadingPhrases.length)
+    }, 2000) // Change phrase every 2 seconds
+
+    return () => clearInterval(interval)
+  }, [isLoading, loadingPhrases.length])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -148,6 +170,75 @@ export default function ChatPage() {
     }
   }
 
+  const handleRegenerate = async () => {
+    if (isLoading || messages.length === 0) return
+
+    // Add current recipe URLs to excluded list
+    const currentRecipeUrls = recipes.map(r => r.recipe.url)
+    const newExcluded = [...excludedRecipes, ...currentRecipeUrls]
+    setExcludedRecipes(newExcluded)
+
+    // Find the last user message (the original query)
+    const lastUserMessage = [...messages].reverse().find(m => m.role === "user")
+    if (!lastUserMessage) return
+
+    setError(null)
+    setIsLoading(true)
+
+    // Reset agent progress
+    setAgentSteps(AGENT_STEPS)
+
+    // Simulate agent progress
+    const progressInterval = setInterval(() => {
+      setAgentSteps(prev => {
+        const nextPending = prev.findIndex(step => step.status === "pending")
+        if (nextPending === -1) return prev
+
+        return prev.map((step, i) => {
+          if (i < nextPending) return { ...step, status: "complete" as const }
+          if (i === nextPending) return { ...step, status: "running" as const }
+          return step
+        })
+      })
+    }, 6000)
+
+    try {
+      const response = await sendChatMessage({
+        message: lastUserMessage.content,
+        is_follow_up: false,
+        excluded_urls: newExcluded
+      })
+
+      clearInterval(progressInterval)
+
+      // Mark all steps complete
+      setAgentSteps(prev => prev.map(step => ({ ...step, status: "complete" as const })))
+
+      // Replace recipes with new ones
+      if (response.recipes.length > 0) {
+        setRecipes(response.recipes)
+
+        // Add a system message indicating regeneration
+        const systemMessage: Message = {
+          role: "assistant",
+          content: response.reply,
+          recipes: response.recipes
+        }
+        setMessages(prev => [...prev, systemMessage])
+      }
+    } catch (err) {
+      clearInterval(progressInterval)
+
+      if (err instanceof APIError) {
+        setError(err.message)
+      } else {
+        setError("Failed to regenerate recipes")
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Landing view - before first message
   if (messages.length === 0) {
     return (
@@ -166,7 +257,7 @@ export default function ChatPage() {
               </div>
               <h1 className="text-4xl font-bold">Ratatouille</h1>
               <p className="text-lg text-gray-600">
-                Your AI sous chef for learning cooking through great recipes
+                Your personal sous chef to improve your cooking
               </p>
             </div>
 
@@ -177,7 +268,7 @@ export default function ChatPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask me anything... (e.g., I want to learn shallow frying)"
+                  placeholder="Ask the chef... (e.g., I want an advanced pancake recipe)"
                   className="flex-1 h-12 text-base"
                   disabled={isLoading}
                 />
@@ -207,8 +298,8 @@ export default function ChatPage() {
               <div className="flex flex-wrap gap-2 justify-center">
                 {[
                   "I want to learn pan sauces for beginners",
-                  "Show me vegetarian knife skills",
-                  "Advanced bread baking techniques"
+                  "Show me recipes that improve my knife skills",
+                  "Advanced sourdough recipes"
                 ].map((example, i) => (
                   <button
                     key={i}
@@ -232,44 +323,28 @@ export default function ChatPage() {
       <div className="min-h-screen bg-white flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center px-6">
-          <div className="max-w-md w-full space-y-6">
+          <div className="max-w-md w-full space-y-8">
             <div className="flex justify-center">
-              <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center">
-                <span className="text-3xl">🐀</span>
+              <div className="w-32 h-32 flex items-center justify-center">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full"
+                >
+                  <source src="/loading-animation.mp4" type="video/mp4" />
+                </video>
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-center">
-              Finding recipes...
-            </h2>
-
-            {/* Agent Progress */}
-            <div className="space-y-3">
-              {agentSteps.map((step, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                    step.status === "complete" && "bg-black border-black",
-                    step.status === "running" && "border-black",
-                    step.status === "pending" && "border-gray-300"
-                  )}>
-                    {step.status === "running" && (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    )}
-                    {step.status === "complete" && (
-                      <span className="text-white text-xs">✓</span>
-                    )}
-                  </div>
-                  <span className={cn(
-                    "text-sm transition-colors",
-                    step.status === "complete" && "text-black font-medium",
-                    step.status === "running" && "text-black",
-                    step.status === "pending" && "text-gray-400"
-                  )}>
-                    {step.label}
-                  </span>
-                </div>
-              ))}
+            <div className="text-center">
+              <h2
+                key={loadingPhraseIndex}
+                className="text-2xl font-bold text-black animate-fade-in"
+              >
+                {loadingPhrases[loadingPhraseIndex]}
+              </h2>
             </div>
           </div>
         </div>
@@ -279,11 +354,11 @@ export default function ChatPage() {
 
   // Split screen view - after recipes loaded
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       <Navigation />
-      <div className="flex-1 flex flex-col lg:flex-row">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left: Chat History (40%) */}
-        <div className="lg:w-2/5 border-r flex flex-col">
+        <div className="lg:w-2/5 border-r flex flex-col h-full">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {messages.map((msg, i) => (
@@ -295,8 +370,13 @@ export default function ChatPage() {
                 )}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg">🐀</span>
+                  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                    <Image
+                      src="/ratatouille-logo.svg"
+                      alt="Assistant"
+                      width={32}
+                      height={32}
+                    />
                   </div>
                 )}
                 <div className={cn(
@@ -306,22 +386,27 @@ export default function ChatPage() {
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 {msg.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg">👤</span>
+                  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                    <Image
+                      src="/chef-icon.svg"
+                      alt="User"
+                      width={32}
+                      height={32}
+                    />
                   </div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Input */}
-          <div className="p-4 border-t">
+          {/* Input - Fixed at bottom */}
+          <div className="p-4 border-t bg-white">
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask a follow-up question..."
+                placeholder="Ask the chef about the recipes..."
                 className="flex-1"
                 disabled={isLoading}
               />
@@ -345,15 +430,32 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Right: Recipes (60%) */}
-        <div className="lg:w-3/5 overflow-y-auto p-6">
+        {/* Right: Recipes Carousel (60%) */}
+        <div className="lg:w-3/5 flex flex-col h-full overflow-hidden">
           {recipes.length > 0 ? (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Your Recipes</h2>
-              <div className="grid gap-6">
-                {recipes.map((recipeCard, i) => (
-                  <RecipeCard key={i} data={recipeCard} />
-                ))}
+            <div className="flex-1 flex flex-col p-6 overflow-hidden">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Your Recipes</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCcw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  Regenerate
+                </Button>
+              </div>
+              {/* Horizontal scrolling carousel */}
+              <div className="flex-1 overflow-x-auto overflow-y-hidden">
+                <div className="flex gap-6 h-full pb-4">
+                  {recipes.map((recipeCard, i) => (
+                    <div key={i} className="flex-shrink-0 w-[400px] h-full overflow-y-auto">
+                      <RecipeCard data={recipeCard} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (

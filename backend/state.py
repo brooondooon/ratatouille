@@ -23,6 +23,7 @@ class RecipeState(TypedDict):
     learning_goal: str  # e.g., "pan sauces", "bread baking"
     skill_level: str  # "beginner" | "intermediate" | "advanced"
     dietary_restrictions: List[str]  # e.g., ["vegetarian", "kosher"]
+    excluded_urls: List[str]  # Recipe URLs to exclude from results
 
     # Agent 1 (Research Planner) outputs
     search_queries: List[str]  # Generated search queries for Tavily
@@ -64,6 +65,7 @@ def create_initial_state(
         learning_goal=learning_goal,
         skill_level=skill_level,
         dietary_restrictions=dietary_restrictions or [],
+        excluded_urls=[],
 
         # Initialize empty agent outputs
         search_queries=[],

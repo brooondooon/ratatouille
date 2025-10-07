@@ -57,6 +57,7 @@ export interface RecommendationRequest {
 export interface ChatRequest {
   message: string
   is_follow_up?: boolean
+  excluded_urls?: string[]
 }
 
 export interface ChatResponse {

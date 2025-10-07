@@ -108,3 +108,57 @@ export async function extractRecipe(
     throw new APIError(500, 'Network error - check your connection')
   }
 }
+
+export interface CookingStep {
+  title: string
+  content: string
+  tips: string
+}
+
+export interface CookGuide {
+  ingredients: string[]
+  steps: CookingStep[]
+  techniques_learned: string[]
+  xp_earned: number
+  badges: string[]
+}
+
+export async function generateCookGuide(
+  rawContent: string,
+  skillLevel: string,
+  learningGoal: string,
+  timeoutMs = 30000
+): Promise<CookGuide> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch('http://localhost:8000/api/cook-guide', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        raw_content: rawContent,
+        skill_level: skillLevel,
+        learning_goal: learningGoal
+      }),
+      signal: controller.signal
+    })
+
+    clearTimeout(timeout)
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+      throw new APIError(response.status, errorData.detail || `HTTP ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    clearTimeout(timeout)
+
+    if (error instanceof APIError) throw error
+    if (error.name === 'AbortError') {
+      throw new APIError(408, 'Request timeout - please try again')
+    }
+    throw new APIError(500, 'Network error - check your connection')
+  }
+}

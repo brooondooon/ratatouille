@@ -80,6 +80,7 @@ class ChatRequest(BaseModel):
     """Request body for conversational recipe chat."""
     message: str = Field(..., min_length=3, max_length=500, description="Natural language cooking request")
     is_follow_up: bool = Field(default=False, description="Whether this is a follow-up question (vs initial recipe request)")
+    excluded_urls: List[str] = Field(default=[], description="List of recipe URLs to exclude from results")
 
     @field_validator('message')
     def validate_message(cls, v):
@@ -91,7 +92,8 @@ class ChatRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "message": "I want to learn shallow frying without experience and minimize oil usage",
-                "is_follow_up": False
+                "is_follow_up": False,
+                "excluded_urls": []
             }
         }
 
@@ -120,6 +122,29 @@ class ExtractResponse(BaseModel):
     """Response for recipe extraction."""
     raw_content: str
     success: bool
+
+
+class CookGuideRequest(BaseModel):
+    """Request body for cook guide generation."""
+    raw_content: str = Field(..., description="Extracted recipe markdown content")
+    skill_level: str = Field(..., description="User's skill level")
+    learning_goal: str = Field(..., description="What the user wants to learn")
+
+
+class CookingStep(BaseModel):
+    """A single cooking step with tips."""
+    title: str
+    content: str
+    tips: str
+
+
+class CookGuideResponse(BaseModel):
+    """Response containing structured cooking guide."""
+    ingredients: List[str]
+    steps: List[CookingStep]
+    techniques_learned: List[str]
+    xp_earned: int
+    badges: List[str]
 
 
 # API Endpoints
@@ -277,6 +302,96 @@ async def extract_recipe(request: ExtractRequest):
         )
 
 
+@app.post("/api/cook-guide", response_model=CookGuideResponse)
+async def generate_cook_guide(request: CookGuideRequest):
+    """
+    Generate an interactive cooking guide from extracted recipe content.
+
+    Uses LLM to:
+    1. Parse ingredients from markdown
+    2. Split numbered steps with generated titles
+    3. Generate personalized chef's tips for each step
+    4. Identify key techniques learned
+    5. Calculate XP and badges
+    """
+    from openai import OpenAI
+
+    logger.info(f"Cook guide request for {request.skill_level} learning {request.learning_goal}")
+
+    try:
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        prompt = f"""Parse this recipe into a structured cooking guide for a {request.skill_level} cook learning {request.learning_goal}.
+
+Recipe Content:
+{request.raw_content[:4000]}
+
+Return ONLY valid JSON with this EXACT structure (all fields are REQUIRED):
+{{
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "steps": [
+    {{
+      "title": "Step Title Here",
+      "content": "Full step instructions here",
+      "tips": "Helpful tip here"
+    }}
+  ],
+  "techniques_learned": ["technique1", "technique2"],
+  "xp_earned": 100,
+  "badges": ["Badge Name"]
+}}
+
+CRITICAL REQUIREMENTS:
+- EVERY step MUST have all 3 fields: "title", "content", AND "tips"
+- The "tips" field is REQUIRED for every step - do not omit it
+- Extract ALL ingredients from the recipe
+- Each numbered step becomes a separate step object with title, content, AND tips
+- Tips should be 1-2 sentences, specific to {request.skill_level} level
+- Include 3-5 techniques learned
+- XP: 50 (simple), 100 (medium), 150+ (complex)
+- Badges: creative names like "Sauté Master", "Knife Skills"
+- Return ONLY valid JSON, no markdown code blocks"""
+
+        response = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4"),
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=2000
+        )
+
+        result_text = response.choices[0].message.content.strip()
+
+        # Remove markdown code blocks if present
+        if result_text.startswith("```"):
+            result_text = result_text.split("```")[1]
+            if result_text.startswith("json"):
+                result_text = result_text[4:]
+            result_text = result_text.strip()
+
+        import json
+        parsed = json.loads(result_text)
+
+        # Validate that all steps have required fields
+        for i, step in enumerate(parsed.get('steps', [])):
+            if 'tips' not in step or not step['tips']:
+                step['tips'] = f"Take your time with this step and follow the instructions carefully."
+            if 'title' not in step or not step['title']:
+                step['title'] = f"Step {i+1}"
+            if 'content' not in step or not step['content']:
+                raise ValueError(f"Step {i+1} is missing content")
+
+        logger.info(f"Generated cook guide: {len(parsed['steps'])} steps, {parsed['xp_earned']} XP")
+
+        return CookGuideResponse(**parsed)
+
+    except Exception as e:
+        logger.error(f"Cook guide generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate cooking guide: {str(e)}"
+        )
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
@@ -329,6 +444,10 @@ async def chat(request: ChatRequest):
             skill_level=intent["skill_level"],
             dietary_restrictions=intent.get("dietary_restrictions", [])
         )
+
+        # Add excluded URLs to state if provided
+        if request.excluded_urls:
+            initial_state["excluded_urls"] = request.excluded_urls
 
         # Step 4: Run the existing multi-agent workflow
         final_state = workflow_app.invoke(initial_state)

@@ -44,8 +44,15 @@ def personalization_engine_agent(state: RecipeState) -> RecipeState:
     user_skill = state["skill_level"]
     learning_goal = state["learning_goal"]
     dietary_restrictions = state["dietary_restrictions"]
+    excluded_urls = state.get("excluded_urls", [])
 
     print(f"🎯 Personalization Engine: Processing {len(raw_recipes)} recipes")
+
+    # Filter out excluded URLs first
+    if excluded_urls:
+        print(f"   ⚠️ Filtering out {len(excluded_urls)} excluded recipes")
+        raw_recipes = [r for r in raw_recipes if r.get("url") not in excluded_urls]
+        print(f"   ✓ {len(raw_recipes)} recipes remaining after exclusion filter")
 
     # Step 1: Filter recipes
     filtered_recipes = _filter_recipes(
@@ -268,18 +275,41 @@ def _select_diverse_recipes(
     count: int = 3
 ) -> List[Dict[str, Any]]:
     """
-    Select top N recipes that teach complementary (diverse) techniques.
+    Select top N recipes that teach complementary (diverse) techniques and have distinct dishes.
     """
     if len(scored_recipes) <= count:
         return scored_recipes
 
     selected = [scored_recipes[0]]  # Always take the top one
 
-    # For remaining slots, prefer recipes with different techniques
+    # For remaining slots, prefer recipes with different techniques AND different dishes
     for candidate in scored_recipes[1:]:
         if len(selected) >= count:
             break
 
+        # Check for title similarity (avoid duplicate dishes)
+        candidate_title = candidate["recipe"].get("title", "").lower()
+        is_similar_dish = False
+
+        for s in selected:
+            selected_title = s["recipe"].get("title", "").lower()
+            # Extract key dish words (remove common words)
+            common_words = {"with", "and", "the", "in", "for", "to", "recipe", "easy", "simple", "best", "a", "an"}
+            candidate_words = set(word for word in candidate_title.split() if word not in common_words)
+            selected_words = set(word for word in selected_title.split() if word not in common_words)
+
+            # If more than 40% of meaningful words overlap, consider it similar (stricter than before)
+            if candidate_words and selected_words:
+                overlap = len(candidate_words & selected_words) / min(len(candidate_words), len(selected_words))
+                if overlap > 0.4:
+                    is_similar_dish = True
+                    break
+
+        # Skip if it's a similar dish
+        if is_similar_dish:
+            continue
+
+        # Check for technique diversity
         candidate_techniques = set(candidate["recipe"].get("techniques", []))
         selected_techniques = set()
         for s in selected:
@@ -288,6 +318,14 @@ def _select_diverse_recipes(
         # Prefer recipes with at least 1 unique technique
         if candidate_techniques - selected_techniques or len(selected) < count:
             selected.append(candidate)
+
+    # If we didn't get enough diverse recipes, fill with remaining top-scored ones
+    if len(selected) < count:
+        for candidate in scored_recipes:
+            if len(selected) >= count:
+                break
+            if candidate not in selected:
+                selected.append(candidate)
 
     return selected
 

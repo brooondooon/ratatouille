@@ -54,7 +54,7 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
   }
 
   return (
-    <Card className="w-full min-h-[500px] flex flex-col relative overflow-hidden">
+    <Card className="w-full h-full flex flex-col relative">
       {/* Top decorative line */}
       <div className="absolute top-0 left-0 right-0 h-2">
         <Image
@@ -65,12 +65,11 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
         />
       </div>
 
-      <CardHeader className="pt-8 space-y-3">
-        {/* Title with emoji and action icons */}
+      <CardHeader className="pt-8 space-y-3 flex-shrink-0">
+        {/* Title and action icons */}
         <div className="flex items-start gap-2">
-          <h2 className="text-2xl font-bold leading-tight flex items-start gap-2 flex-1">
-            <span className="text-2xl">🍳</span>
-            <span className="flex-1">{recipe.title}</span>
+          <h2 className="text-2xl font-bold leading-tight flex-1">
+            {recipe.title}
           </h2>
           <div className="flex gap-1 shrink-0">
             <Button
@@ -95,49 +94,44 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
         </div>
 
         {/* Metadata row */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <span className="font-medium">Difficulty:</span>
-            <div className="flex">
+        <div className="flex items-center gap-2.5 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground uppercase tracking-wide font-medium">Difficulty</span>
+            <div className="flex gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
                   className={`w-3 h-3 ${
-                    i < stars ? "fill-black stroke-black" : "stroke-black fill-white"
+                    i < stars ? "fill-black stroke-black" : "stroke-gray-300 fill-white"
                   }`}
                 />
               ))}
             </div>
-            <span className="ml-1 capitalize">{recipe.difficulty}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            <span>{recipe.time_estimate}</span>
+          <div className="h-3 w-px bg-gray-300" />
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-medium whitespace-nowrap">{recipe.time_estimate.replace('minutes', 'min').replace('minute', 'min')}</span>
           </div>
-          <span className="text-xs">|</span>
-          <span>{recipe.source}</span>
+          <div className="h-3 w-px bg-gray-300" />
+          <span className="text-muted-foreground truncate">{recipe.source}</span>
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 space-y-6 pb-6">
-        {/* Divider */}
-        <div className="h-px bg-black w-full" />
-
-        {/* Why This Recipe */}
-        <div className="space-y-2">
-          <h3 className="text-base font-semibold flex items-center gap-2">
-            <span>🎯</span>
-            Why This Recipe:
-          </h3>
-          <p className="text-sm leading-relaxed text-foreground/90">
-            {reasoning}
-          </p>
-        </div>
+      <CardContent className="flex-1 flex flex-col pb-6">
+        <div className="flex-1 space-y-6">
+          {/* Divider */}
+          <div className="h-px bg-black w-full" />
 
         {/* Techniques You'll Learn */}
         <div className="space-y-2">
           <h3 className="text-base font-semibold flex items-center gap-2">
-            <span>🔥</span>
+            <Image
+              src="/technique-icon.svg"
+              alt=""
+              width={20}
+              height={20}
+            />
             Techniques You'll Learn:
           </h3>
           <ul className="space-y-1">
@@ -201,47 +195,45 @@ export function RecipeCard({ data, compact = false }: RecipeCardProps) {
 
         {/* Nutrition */}
         {nutrition.calories && (
-          <div className="space-y-2">
+          <div className="space-y-1">
             <h3 className="text-base font-semibold flex items-center gap-2">
-              <span>🥗</span>
+              <Image
+                src="/nutrition-icon.svg"
+                alt=""
+                width={20}
+                height={20}
+              />
               Nutrition (per serving):
             </h3>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <span className="font-medium">{nutrition.calories} cal</span>
-              {nutrition.protein_g && <span>{nutrition.protein_g}g protein</span>}
-              {nutrition.carbs_g && <span>{nutrition.carbs_g}g carbs</span>}
-              {nutrition.fat_g && <span>{nutrition.fat_g}g fat</span>}
-              {nutrition.fiber_g && <span>{nutrition.fiber_g}g fiber</span>}
-            </div>
-            <p className="text-xs text-muted-foreground italic">
-              {nutrition.disclaimer}
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{nutrition.calories} cal</span>
+              {nutrition.protein_g && <span> • {nutrition.protein_g}g protein</span>}
+              {nutrition.carbs_g && <span> • {nutrition.carbs_g}g carbs</span>}
+              {nutrition.fat_g && <span> • {nutrition.fat_g}g fat</span>}
+              {nutrition.fiber_g && <span> • {nutrition.fiber_g}g fiber</span>}
+              {nutrition.disclaimer && <span className="italic"> • {nutrition.disclaimer}</span>}
             </p>
           </div>
         )}
 
-        {/* Divider */}
-        <div className="h-px bg-black w-full" />
+        </div>
 
-        {/* Let's Cook Button */}
-        <Button
-          variant="default"
-          className="w-full bg-black hover:bg-black/90"
-          onClick={handleLetsCook}
-        >
-          <ChefHat className="w-4 h-4 mr-2" />
-          Let's cook!
-        </Button>
+        {/* Fixed bottom section */}
+        <div className="space-y-6 mt-6">
+          {/* Divider */}
+          <div className="h-px bg-black w-full" />
+
+          {/* Let's Cook Button */}
+          <Button
+            variant="default"
+            className="w-full bg-black hover:bg-black/90"
+            onClick={handleLetsCook}
+          >
+            <ChefHat className="w-4 h-4 mr-2" />
+            Let's cook!
+          </Button>
+        </div>
       </CardContent>
-
-      {/* Bottom decorative line */}
-      <div className="absolute bottom-0 left-0 right-0 h-2">
-        <Image
-          src="/border-assets/Line-bottom.svg"
-          alt=""
-          fill
-          className="object-cover"
-        />
-      </div>
     </Card>
   )
 }
