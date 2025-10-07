@@ -2,7 +2,7 @@
 
 An intelligent recipe recommendation system that helps home cooks learn culinary techniques through personalized recipe suggestions and interactive cooking guidance.
 
-**🔗 Try it live**: [https://tinyurl.com/ratatouillechef](https://tinyurl.com/ratatouillechef)
+**Try it live**: [https://tinyurl.com/ratatouillechef](https://tinyurl.com/ratatouillechef)
 
 ## Overview
 
