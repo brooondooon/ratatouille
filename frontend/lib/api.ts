@@ -1,5 +1,7 @@
 import type { RecommendationRequest, RecommendationResponse, ChatRequest, ChatResponse } from './types'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export class APIError extends Error {
   constructor(public status: number, message: string) {
     super(message)
@@ -15,7 +17,7 @@ export async function fetchRecipes(
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const response = await fetch('http://localhost:8000/api/recommend', {
+    const response = await fetch(`${API_URL}/api/recommend`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
@@ -34,7 +36,7 @@ export async function fetchRecipes(
     clearTimeout(timeout)
 
     if (error instanceof APIError) throw error
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new APIError(408, 'Request timeout - please try again')
     }
     throw new APIError(500, 'Network error - check your connection')
@@ -49,7 +51,7 @@ export async function sendChatMessage(
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const response = await fetch('http://localhost:8000/api/chat', {
+    const response = await fetch(`${API_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
@@ -68,7 +70,7 @@ export async function sendChatMessage(
     clearTimeout(timeout)
 
     if (error instanceof APIError) throw error
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new APIError(408, 'Request timeout - please try again')
     }
     throw new APIError(500, 'Network error - check your connection')
@@ -83,7 +85,7 @@ export async function extractRecipe(
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const response = await fetch('http://localhost:8000/api/extract', {
+    const response = await fetch(`${API_URL}/api/extract`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
@@ -102,7 +104,7 @@ export async function extractRecipe(
     clearTimeout(timeout)
 
     if (error instanceof APIError) throw error
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new APIError(408, 'Request timeout - please try again')
     }
     throw new APIError(500, 'Network error - check your connection')
@@ -133,7 +135,7 @@ export async function generateCookGuide(
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const response = await fetch('http://localhost:8000/api/cook-guide', {
+    const response = await fetch(`${API_URL}/api/cook-guide`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -156,7 +158,7 @@ export async function generateCookGuide(
     clearTimeout(timeout)
 
     if (error instanceof APIError) throw error
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new APIError(408, 'Request timeout - please try again')
     }
     throw new APIError(500, 'Network error - check your connection')

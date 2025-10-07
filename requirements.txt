@@ -1,21 +1,12 @@
-# Core Framework
-fastapi>=0.104.1
-uvicorn>=0.24.0
-pydantic>=2.5.0
-
-# Multi-Agent System (use latest compatible versions)
-langgraph>=0.2.0
-langchain>=0.3.0
-langchain-openai>=0.2.0
-langchain-core>=0.3.0
-
-# API Clients
-tavily-python>=0.3.3
-openai>=1.50.0
-
-# Utilities
-python-dotenv>=1.0.0
-
-# Testing
-pytest>=7.4.3
-pytest-asyncio>=0.21.1
+fastapi==0.118.0
+langchain-openai==0.3.35
+langgraph==0.6.8
+langgraph-checkpoint==2.1.1
+langgraph-prebuilt==0.6.4
+langgraph-sdk==0.2.9
+openai==2.2.0
+pydantic==2.11.10
+pydantic_core==2.33.2
+python-dotenv==1.1.1
+tavily-python==0.7.12
+uvicorn==0.37.0

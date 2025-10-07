@@ -271,6 +271,14 @@ async def extract_recipe(request: ExtractRequest):
         # Extract response structure: {"results": [{"url": ..., "raw_content": ...}], "failed_results": []}
         if result.get("failed_results"):
             logger.error(f"Tavily extract failed for {request.url}: {result['failed_results']}")
+            # Check if it's an access denied error
+            failed = result['failed_results'][0] if result['failed_results'] else {}
+            error_msg = failed.get('error', '')
+            if 'Access denied' in error_msg or 'Unable to retrieve content' in error_msg:
+                raise HTTPException(
+                    status_code=403,
+                    detail="This recipe site blocks automated access. Please visit the recipe directly using the link button."
+                )
             raise HTTPException(
                 status_code=500,
                 detail="Failed to extract recipe content from URL"

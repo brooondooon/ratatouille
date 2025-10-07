@@ -123,16 +123,28 @@ function CookContent() {
 
   // Error State
   if (error) {
+    const recipeUrl = searchParams.get("url")
+    const isAccessDeniedError = error.includes("blocks automated access")
+
     return (
       <div className="min-h-screen bg-white px-6 py-8">
         <div className="max-w-2xl mx-auto space-y-6 text-center">
-          <div className="text-6xl">😕</div>
-          <h2 className="text-2xl font-bold">Oops! Something went wrong</h2>
+          <div className="text-6xl">{isAccessDeniedError ? "🔒" : "😕"}</div>
+          <h2 className="text-2xl font-bold">
+            {isAccessDeniedError ? "Recipe Site Blocked" : "Oops! Something went wrong"}
+          </h2>
           <p className="text-muted-foreground">{error}</p>
-          <Button onClick={() => router.back()} variant="default">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Go Back
-          </Button>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => router.back()} variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Go Back
+            </Button>
+            {recipeUrl && isAccessDeniedError && (
+              <Button onClick={() => window.open(recipeUrl, '_blank')} variant="default">
+                Visit Recipe Site
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     )
