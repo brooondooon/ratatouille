@@ -6,7 +6,16 @@ An intelligent recipe recommendation system that helps home cooks learn culinary
 
 ## Overview
 
-Ratatouille is a **4-agent multi-agent system** built with LangGraph that delivers educational recipe recommendations optimized for learning. The system features conversational recipe discovery, interactive cooking mode with timers, and a personal cookbook for saved recipes.
+**The Problem**: Home cooks searching for recipes to learn specific techniques face a frustrating challenge—generic recipe search returns thousands of results with no way to filter by skill level or learning value. A beginner searching "pan sauces" gets the same results as an expert, buried in food blogs and ads, with no guarantee the recipe actually teaches the technique properly.
+
+**The Solution**: Ratatouille is a **4-agent multi-agent system** built with LangGraph that solves this by combining **real-time web search** (Tavily API) with **intelligent filtering and personalization**. Instead of static recipe databases, Ratatouille searches the live web for the most recent, high-quality recipes, then uses specialized agents to:
+
+1. **Validate** recipes genuinely teach your target technique (not just keyword matches)
+2. **Score** recipes on educational value, skill appropriateness, and technique diversity
+3. **Personalize** by selecting the top 3 recipes that match your exact skill level and learning goals
+4. **Enrich** with nutritional data and technique highlights
+
+The result: **Personalized, educational recipe recommendations in 30 seconds**—not generic search results, but curated learning paths backed by fresh, authoritative content from across the web.
 
 ### Key Features
 
@@ -14,7 +23,7 @@ Ratatouille is a **4-agent multi-agent system** built with LangGraph that delive
 - 🧑‍🍳 **Interactive Cooking Mode** - Step-by-step guidance with timers and XP rewards
 - 📚 **Personal Cookbook** - Bookmark and organize favorite recipes
 - 🤖 **4-Agent Coordination** - Specialized agents for planning, hunting, personalizing, and nutrition
-- ⚡ **Optimized Performance** - 30-second response times (60-70% faster than v1.0)
+- ⚡ **Real-Time Search** - Tavily API ensures fresh, up-to-date recipes from across the web
 - 🍎 **Nutrition Intelligence** - Automatic nutrition estimation per serving
 
 ## Quick Start
