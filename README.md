@@ -17,7 +17,7 @@ An intelligent recipe recommendation system that helps home cooks learn culinary
 
 ## Demo Video
 
-[![Watch Demo](https://img.youtube.com/vi/eILNdYoBcJ4/maxresdefault.jpg)](https://youtu.be/eILNdYoBcJ4)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/eILNdYoBcJ4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### Key Features
 
