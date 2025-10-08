@@ -17,8 +17,53 @@ from backend.graph import workflow_app
 from backend import config  # Validates API keys on import
 from backend.logger import get_logger
 from backend.agents.intent_extractor import extract_intent, answer_follow_up
+import random
 
 logger = get_logger("api")
+
+# Ratatouille's personality elements
+FRENCH_EXCLAMATIONS = [
+    "Ah", "Bon", "Eh bien", "Voilà", "Mais oui", "Très bien", "Parfait", "Excellent", "Magnifique"
+]
+
+SNIFF_VARIATIONS = ["*sniff sniff*", "*sniff*", "*adjusts tiny chef hat*", "*tastes the air*"]
+
+def add_ratatouille_personality(reply: str, context: str = "recipe") -> str:
+    """
+    Adds Ratatouille's charming personality to responses.
+
+    Args:
+        reply: The base reply text
+        context: Either 'recipe' for recipe results or 'followup' for Q&A
+
+    Returns:
+        Reply with added personality
+    """
+    # Start with a sniff or French exclamation
+    intro = random.choice([
+        random.choice(SNIFF_VARIATIONS),
+        random.choice(FRENCH_EXCLAMATIONS) + "!"
+    ])
+
+    # Occasionally add a mid-sentence French word
+    french_interjections = {
+        " I ": f" {random.choice(['Mais', 'Ah'])} I ",
+        " perfect ": f" {random.choice(['parfait', 'magnifique'])} ",
+        " great ": f" {random.choice(['formidable', 'excellent'])} ",
+        " good ": " bon "
+    }
+
+    modified_reply = reply
+
+    # 50% chance to add a French word
+    if random.random() > 0.5:
+        for eng, fr in french_interjections.items():
+            if eng in modified_reply:
+                modified_reply = modified_reply.replace(eng, fr, 1)
+                break
+
+    # Combine intro + reply
+    return f"{intro} {modified_reply}"
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -426,6 +471,9 @@ async def chat(request: ChatRequest):
             # Answer the question directly with GPT (no workflow)
             reply = answer_follow_up(request.message)
 
+            # Add Ratatouille's personality
+            reply = add_ratatouille_personality(reply, context="followup")
+
             processing_time_ms = round((time.time() - start_time) * 1000)
 
             # Return answer with no recipes
@@ -483,6 +531,9 @@ async def chat(request: ChatRequest):
             reply += " with advanced techniques"
 
         reply += ". Check them out below!"
+
+        # Add Ratatouille's personality
+        reply = add_ratatouille_personality(reply, context="recipe")
 
         # Build response
         response = ChatResponse(
