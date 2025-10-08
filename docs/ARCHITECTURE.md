@@ -7,7 +7,7 @@ Ratatouille is a multi-agent recipe recommendation system built with LangGraph t
 ## High-Level Architecture
 
 ```
-User Input → Intent Extractor → Multi-Agent Workflow → Response
+User Input → Intent Extractor → Multi-Agent Workflow
                                        ↓
                     ┌──────────────────┴──────────────────┐
                     │                                     │
