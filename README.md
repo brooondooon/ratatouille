@@ -17,7 +17,7 @@ An intelligent recipe recommendation system that helps home cooks learn culinary
 
 ## Demo Video
 
-https://github.com/brooondooon/ratatouille/assets/Demo%20Video.mp4
+[![Watch Demo](https://img.youtube.com/vi/eILNdYoBcJ4/maxresdefault.jpg)](https://youtu.be/eILNdYoBcJ4)
 
 ### Key Features
 
