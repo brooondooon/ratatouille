@@ -203,6 +203,12 @@ async def root():
     }
 
 
+@app.head("/")
+async def root_head():
+    """HEAD endpoint for uptime monitoring services."""
+    return {}
+
+
 @app.get("/health")
 async def health():
     """Detailed health check with API key validation."""
