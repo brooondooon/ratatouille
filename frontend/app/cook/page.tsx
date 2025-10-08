@@ -111,11 +111,8 @@ function CookContent() {
             </video>
           </div>
           <h2 className="text-2xl font-bold text-black">
-            Crafting the perfect plan…
+            Setting up the mise en place...
           </h2>
-          <p className="text-sm text-muted-foreground max-w-md">
-            Ratatouille is working hard to organize the recipe and provide his expert tips
-          </p>
         </div>
       </div>
     )
