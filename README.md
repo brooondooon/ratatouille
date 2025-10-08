@@ -21,12 +21,10 @@ https://github.com/user-attachments/assets/0f67b66d-43d1-4bfc-9d2c-3d263c823790
 
 ### Key Features
 
-- 🎯 **Smart Recipe Discovery** - Conversational interface for natural language requests
-- 🧑‍🍳 **Interactive Cooking Mode** - Step-by-step guidance with timers and XP rewards
-- 📚 **Personal Cookbook** - Bookmark and organize favorite recipes
-- 🤖 **4 Specialized Sub-Agents** - Research planner, recipe hunter, personalization engine, and nutrition analyzer
-- ⚡ **Real-Time Search** - Tavily API ensures fresh, up-to-date recipes from across the web
-- 🍎 **Nutrition Intelligence** - Automatic nutrition estimation per serving
+- **Smart Recipe Discovery** - Conversational interface for natural language requests
+- **Interactive Cooking Mode** - Step-by-step guidance with timers and XP rewards
+- **Personal Cookbook** - Bookmark and organize favorite recipes
+- **Nutrition Intelligence** - Automatic nutrition estimation per serving
 
 ## Quick Start
 
